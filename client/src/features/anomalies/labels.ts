@@ -1,0 +1,16 @@
+export const ANOMALY_TYPE: Record<string, string> = {
+  ARRIVEE_MANQUANTE: 'Arrivée manquante',
+  DEPART_MANQUANT: 'Départ manquant',
+  DOUBLE_ARRIVEE: 'Double arrivée',
+  DOUBLE_DEPART: 'Double départ',
+  DEPART_SANS_ARRIVEE: 'Départ sans arrivée',
+  HORS_HORAIRE: 'Pointage hors horaire',
+  JOUR_NON_TRAVAILLE: 'Pointage un jour non travaillé',
+  PAUSE_NON_TERMINEE: 'Pause non terminée',
+  DUREE_ANORMALE: 'Durée anormale',
+  DEPASSEMENT_HORAIRE: 'Dépassement d’horaire',
+  CORRECTION_MANUELLE: 'Correction manuelle',
+  TENTATIVES_REPETEES: 'Tentatives répétées',
+  HORS_RESEAU: 'Hors réseau autorisé',
+  QR_INVALIDE: 'QR Code invalide',
+};

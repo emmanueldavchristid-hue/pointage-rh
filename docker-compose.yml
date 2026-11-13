@@ -1,0 +1,72 @@
+# Pointage RH — déploiement sur le serveur local de l'entreprise
+# Démarrage : docker compose up -d --build   (voir docs/INSTALLATION.md)
+name: pointage-rh
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: pointage
+      POSTGRES_USER: pointage
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Définir DB_PASSWORD dans .env}
+      TZ: Africa/Abidjan
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pointage -d pointage"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    # aucun port publié : la base n'est joignable que par l'application
+
+  app:
+    build: .
+    image: pointage-rh:latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://pointage:${DB_PASSWORD}@db:5432/pointage
+      JWT_SECRET: ${JWT_SECRET:?Définir JWT_SECRET dans .env}
+      QR_SECRET: ${QR_SECRET:?Définir QR_SECRET dans .env}
+      PUBLIC_URL: ${PUBLIC_URL:-https://pointage.entreprise.lan}
+      TRUST_PROXY: uniquelocal
+      COOKIE_SECURE: "true"
+      ADMIN_LOGIN: ${ADMIN_LOGIN:-admin}
+      ADMIN_INITIAL_PASSWORD: ${ADMIN_INITIAL_PASSWORD:-ChangezMoi2026}
+    volumes:
+      - appdata:/data
+      - ${BACKUP_HOST_DIR:-./deploy/backups}:/data/backups
+    expose:
+      - "4000"
+
+  web:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./deploy/certs:/etc/nginx/certs:ro
+
+  # Outil ponctuel : génération de l'autorité de certification locale et du certificat HTTPS
+  #   docker compose --profile outils run --rm certs
+  certs:
+    image: alpine:3.20
+    profiles: ["outils"]
+    environment:
+      SERVER_IP: ${SERVER_IP:?Définir SERVER_IP (IP fixe du serveur) dans .env}
+      SERVER_NAME: ${SERVER_NAME:-pointage.entreprise.lan}
+    volumes:
+      - ./deploy/certs:/certs
+      - ./deploy/scripts:/scripts:ro
+    entrypoint: ["sh", "-c", "apk add --no-cache openssl >/dev/null && sh /scripts/generate-certs.sh"]
+
+volumes:
+  pgdata:
+  appdata:
