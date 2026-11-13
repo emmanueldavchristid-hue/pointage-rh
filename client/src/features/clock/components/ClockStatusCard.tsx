@@ -50,7 +50,7 @@ export function ClockStatusCard({ status, receivedAt }: { status: ClockStatus; r
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1">
           <StatusBadge kind="state" value={status.state} />
-          {status.dayStatus !== 'EN_COURS' && status.state !== 'NON_POINTE' && <StatusBadge kind="day" value={status.dayStatus} dot={false} />}
+          {status.dayStatus !== 'EN_COURS' && <StatusBadge kind="day" value={status.dayStatus} dot={false} />}
         </div>
       </div>
 

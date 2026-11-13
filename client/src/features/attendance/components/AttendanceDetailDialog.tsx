@@ -104,7 +104,7 @@ function Body({ att, startInCorrect, onClose }: { att: AttendanceDetail; startIn
             )}
 
             <Tabs defaultValue="events">
-              <TabsList variant="underline">
+              <TabsList variant="underline" className="overflow-y-hidden">
                 <TabsTrigger value="events"><Clock />Chronologie <span className="text-xs text-muted">({att.events.length})</span></TabsTrigger>
                 <TabsTrigger value="corrections"><History />Corrections <span className="text-xs text-muted">({att.corrections.length})</span></TabsTrigger>
                 <TabsTrigger value="anomalies"><AlertTriangle />Anomalies <span className="text-xs text-muted">({att.anomalies.length})</span></TabsTrigger>

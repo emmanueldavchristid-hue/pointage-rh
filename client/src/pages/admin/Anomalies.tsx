@@ -136,11 +136,11 @@ export default function AdminAnomaliesPage() {
       />
       <Card className="overflow-hidden">
         <FilterBar onReset={reset} canReset={dirty}>
-          <Select value={f.status} onValueChange={(v) => set({ status: v })} options={statusOptions} allLabel="Tous les statuts" aria-label="Statut" />
-          <Select value={f.type} onValueChange={(v) => set({ type: v })} options={typeOptions} allLabel="Tous les types" aria-label="Type" />
-          <Select value={f.severity} onValueChange={(v) => set({ severity: v })} options={severityOptions} allLabel="Toutes gravités" aria-label="Gravité" />
-          <Select value={f.departmentId} onValueChange={(v) => set({ departmentId: v })} options={deptOptions} allLabel="Tous les départements" aria-label="Département" />
-          <Select value={f.employeeId} onValueChange={(v) => set({ employeeId: v })} options={empOptions} allLabel="Tous les employés" aria-label="Employé" />
+          <Select className="sm:w-[200px]" value={f.status} onValueChange={(v) => set({ status: v })} options={statusOptions} allLabel="Tous les statuts" aria-label="Statut" />
+          <Select className="sm:w-[200px]" value={f.type} onValueChange={(v) => set({ type: v })} options={typeOptions} allLabel="Tous les types" aria-label="Type" />
+          <Select className="sm:w-[200px]" value={f.severity} onValueChange={(v) => set({ severity: v })} options={severityOptions} allLabel="Toutes gravités" aria-label="Gravité" />
+          {isHR && <Select className="sm:w-[200px]" value={f.departmentId} onValueChange={(v) => set({ departmentId: v })} options={deptOptions} allLabel="Tous les départements" aria-label="Département" />}
+          <Select className="sm:w-[200px]" value={f.employeeId} onValueChange={(v) => set({ employeeId: v })} options={empOptions} allLabel="Tous les employés" aria-label="Employé" />
           <DateRangePicker from={f.from} to={f.to} onChange={(r) => set({ from: r.from, to: r.to })} />
         </FilterBar>
         <TableContainer className="rounded-none border-0 shadow-none">
@@ -164,7 +164,7 @@ export default function AdminAnomaliesPage() {
                 <tr><td colSpan={6}><EmptyState compact icon={CheckCircle2} title="Aucune anomalie" description="Aucune anomalie ne correspond à ces filtres." /></td></tr>
               ) : q.data.items.map((a) => (
                 <TableRow key={a.id}>
-                  <TableCell className="max-w-[420px]">
+                  <TableCell className="min-w-[240px] max-w-[420px]">
                     <div className="flex gap-3">
                       <span className={cn('mt-1 h-8 w-1 shrink-0 rounded-full', SEVERITY_BAR[a.severity] ?? 'bg-slate-300')} aria-hidden />
                       <div className="min-w-0">
@@ -192,8 +192,8 @@ export default function AdminAnomaliesPage() {
                   <TableCell align="right">
                     <div className="flex justify-end gap-1">
                       {a.attendanceId && (
-                        <Button variant="ghost" size="sm" leftIcon={<PencilLine />} onClick={() => setRegularize(a.attendanceId)}>
-                          <span className="hidden xl:inline">{isHR ? 'Régulariser le pointage' : 'Voir la journée'}</span>
+                        <Button variant="ghost" size="sm" leftIcon={<PencilLine />} title={isHR ? 'Régulariser le pointage' : 'Voir la journée'} aria-label={isHR ? 'Régulariser le pointage' : 'Voir la journée'} onClick={() => setRegularize(a.attendanceId)}>
+                          <span className="hidden 2xl:inline">{isHR ? 'Régulariser' : 'Voir la journée'}</span>
                         </Button>
                       )}
                       {isHR && (a.status === 'OUVERTE' || a.status === 'EN_COURS') && (

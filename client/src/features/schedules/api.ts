@@ -172,18 +172,21 @@ export const isNightSchedule = (start?: string | null, end?: string | null) => {
   return s !== null && e !== null && e <= s;
 };
 
-/** Durée théorique = amplitude − pause (gère le passage de minuit). */
+/** Durée théorique = amplitude − partie de la pause comprise dans l'amplitude (gère le passage de minuit). */
 export function computeDailyMinutes(start?: string | null, end?: string | null, bStart?: string | null, bEnd?: string | null): number | null {
   const s = toMinutes(start);
   let e = toMinutes(end);
   if (s === null || e === null) return null;
   if (e <= s) e += 1440;
   let total = e - s;
-  const bs = toMinutes(bStart);
+  let bs = toMinutes(bStart);
   let be = toMinutes(bEnd);
   if (bs !== null && be !== null) {
+    if (bs < s) bs += 1440;
     if (be <= bs) be += 1440;
-    total -= be - bs;
+    if (be - bs >= 1440) be = bs;
+    const overlap = Math.max(0, Math.min(e, be) - Math.max(s, bs));
+    total -= overlap;
   }
   return Math.max(0, total);
 }

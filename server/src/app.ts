@@ -58,7 +58,7 @@ export function createApp() {
   const web = path.resolve(process.cwd(), 'public');
   if (fs.existsSync(path.join(web, 'index.html'))) {
     app.use(express.static(web, { index: false, maxAge: '1h' }));
-    app.get('*', (_req, res) => res.sendFile(path.join(web, 'index.html')));
+    app.get(/^(?!\/(api|uploads)\/).*/, (_req, res) => res.sendFile(path.join(web, 'index.html')));
   }
 
   app.use((err: any, req: express.Request, res: express.Response, _next: express.NextFunction) => {

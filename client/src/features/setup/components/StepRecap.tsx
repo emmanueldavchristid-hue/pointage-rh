@@ -47,9 +47,13 @@ export function StepRecap({ status, onBack, onActivated }: { status: SetupStatus
       description="Vérifiez que tout est prêt, puis ouvrez le pointage à vos employés."
       footer={<>
         <BackButton onClick={onBack} />
-        <Button size="lg" variant="success" leftIcon={<Power />} loading={activate.isPending} onClick={run}>
-          {status.setupCompleted && !status.clockingEnabled ? 'Réactiver le pointage' : 'Activer le pointage'}
-        </Button>
+        {status.clockingEnabled ? (
+          <Button size="lg" variant="success" leftIcon={<CheckCircle2 />} onClick={onActivated}>Pointage actif : terminer</Button>
+        ) : (
+          <Button size="lg" variant="success" leftIcon={<Power />} loading={activate.isPending} onClick={run}>
+            {status.setupCompleted ? 'Réactiver le pointage' : 'Activer le pointage'}
+          </Button>
+        )}
       </>}
     >
       <div className="space-y-4">

@@ -50,9 +50,9 @@ export default function AdminAbsencesPage() {
       <Card className="overflow-hidden">
         <FilterBar onReset={reset} canReset={dirty}>
           <DateRangePicker from={f.from} to={f.to} onChange={(r) => set({ from: r.from, to: r.to })} />
-          <Select value={f.departmentId} onValueChange={(v) => set({ departmentId: v })} options={deptOptions} allLabel="Tous les départements" aria-label="Département" />
-          <Select value={f.employeeId} onValueChange={(v) => set({ employeeId: v })} options={empOptions} allLabel="Tous les employés" aria-label="Employé" />
-          <Select value={f.dayStatus} onValueChange={(v) => set({ dayStatus: v })} options={TYPES.map((t) => ({ value: t, label: DAY_STATUS[t].label }))} allLabel="Tous les types" aria-label="Type" />
+          {isHR && <Select className="sm:w-[200px]" value={f.departmentId} onValueChange={(v) => set({ departmentId: v })} options={deptOptions} allLabel="Tous les départements" aria-label="Département" />}
+          <Select className="sm:w-[200px]" value={f.employeeId} onValueChange={(v) => set({ employeeId: v })} options={empOptions} allLabel="Tous les employés" aria-label="Employé" />
+          <Select className="sm:w-[200px]" value={f.dayStatus} onValueChange={(v) => set({ dayStatus: v })} options={TYPES.map((t) => ({ value: t, label: DAY_STATUS[t].label }))} allLabel="Tous les types" aria-label="Type" />
         </FilterBar>
         <TableContainer className="rounded-none border-0 shadow-none">
           <Table>

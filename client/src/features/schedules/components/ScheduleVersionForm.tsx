@@ -124,7 +124,7 @@ export function ScheduleVersionFields({ form, minEffectiveFrom, idPrefix = 'v' }
         </div>
         {night && (
           <div className="flex items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm text-indigo-800">
-            <Moon className="h-4 w-4" />
+            <Badge variant="info" className="shrink-0"><Moon className="h-3 w-3" />Traverse minuit</Badge>
             <span><strong>Horaire de nuit détecté</strong> : la journée commence la veille et se termine le lendemain. Elle est rattachée à la date de début.</span>
           </div>
         )}

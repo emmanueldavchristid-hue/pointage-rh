@@ -25,7 +25,7 @@ const shortDay = (d: string) => {
   const [, m, day] = d.split('-');
   return `${day}/${m}`;
 };
-const shortMonth = (m: string) => formatMonth(m).replace(/ \d{4}$/, '').slice(0, 4) + '.';
+const shortMonth = (m: string) => new Intl.DateTimeFormat('fr-FR', { month: 'short', timeZone: 'UTC' }).format(new Date(`${m.slice(0, 7)}-15T12:00:00Z`));
 
 function TooltipBox({ title, rows }: { title: React.ReactNode; rows: { label: string; value: string; color?: string }[] }) {
   return (
@@ -113,17 +113,17 @@ export function PresenceRateChart({ data, loading }: { data: D; loading: boolean
   const rows = raw.map((r) => ({ date: r.date, rate: Math.round(norm(r.rate) * 10) / 10 }));
   return (
     <ChartCard title="Taux de présence" description="Évolution quotidienne" loading={loading} empty={!rows.length}>
-      <LineChart data={rows} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+      <LineChart data={rows} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
         <CartesianGrid vertical={false} stroke={C.grid} />
         <XAxis dataKey="date" tickFormatter={shortDay} {...axisProps} minTickGap={16} />
-        <YAxis domain={[0, 100]} tickFormatter={(v) => `${v} %`} {...axisProps} width={56} />
+        <YAxis domain={[0, 100]} tickFormatter={(v) => `${v} %`} {...axisProps} width={48} ticks={[0, 25, 50, 75, 100]} />
         <Tooltip
           cursor={{ stroke: '#CBD5E1', strokeWidth: 1 }}
           content={({ active, payload, label }: TipProps) => active && payload?.length ? (
             <TooltipBox title={formatDayShort(String(label))} rows={[{ label: 'Taux de présence', value: `${String(payload[0].value).replace('.', ',')} %`, color: C.single }]} />
           ) : null}
         />
-        <Line type="monotone" dataKey="rate" stroke={C.single} strokeWidth={2} dot={rows.length <= 10 ? { r: 3, fill: C.single, stroke: '#fff', strokeWidth: 2 } : false} activeDot={{ r: 5, stroke: '#fff', strokeWidth: 2 }} />
+        <Line type="linear" dataKey="rate" stroke={C.single} strokeWidth={2} dot={rows.length <= 10 ? { r: 3, fill: C.single, stroke: '#fff', strokeWidth: 2 } : false} activeDot={{ r: 5, stroke: '#fff', strokeWidth: 2 }} />
       </LineChart>
     </ChartCard>
   );

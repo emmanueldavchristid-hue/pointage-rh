@@ -78,7 +78,7 @@ Toutes les heures renvoyées sont des ISO 8601 UTC (`2026-11-13T08:04:12.000Z`) 
 ## Pointage (employé connecté)
 | GET | `/clock/status` | → `ClockStatus` |
 |---|---|---|
-| POST | `/clock/scan` | `{action: 'ARRIVEE'|'DEPART'|'PAUSE_DEBUT'|'PAUSE_FIN', qrPayload: string, idempotencyKey: uuid, clientTime?}` → `{ok:true, event: {type, serverTime}, status: ClockStatus, message}` ou erreur |
+| POST | `/clock/scan` | `{action: 'ARRIVEE'|'DEPART'|'PAUSE_DEBUT'|'PAUSE_FIN', qrPayload: string, idempotencyKey: uuid, clientTime?}` → `{ok:true, replay: boolean, event: {type, serverTime}, status: ClockStatus, message, warnings: string[]}` ou erreur (`replay` = même clé d'idempotence déjà traitée ; `warnings` = retard, départ anticipé, jour férié/congé…) |
 
 `ClockStatus` = `{workDate, state, dayStatus, arrivalAt, departureAt, breaks: [{startAt, endAt}], breakTracking, maxBreaks, allowedActions: string[], schedule: {name, startTime, endTime, breakStart, breakEnd, lateToleranceMin} | null, isWorkingDay, holiday: string|null, leave: {type, label}|null, lateMinutes, workedMinutes, clockingEnabled}`
 

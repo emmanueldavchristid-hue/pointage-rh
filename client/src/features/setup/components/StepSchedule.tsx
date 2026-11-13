@@ -62,16 +62,17 @@ export function computeDailyMinutes(start: string, end: string, bs?: string | nu
   return Math.max(0, span - pause);
 }
 
-function NumberField({ id, label, hint, error, suffix = 'min', ...rest }: { id: string; label: string; hint?: string; error?: { message?: string }; suffix?: string } & React.InputHTMLAttributes<HTMLInputElement>) {
+type NumberFieldProps = { id: string; label: string; hint?: string; error?: { message?: string }; suffix?: string } & React.InputHTMLAttributes<HTMLInputElement>;
+const NumberField = React.forwardRef<HTMLInputElement, NumberFieldProps>(function NumberField({ id, label, hint, error, suffix = 'min', ...rest }, ref) {
   return (
     <FormField label={label} htmlFor={id} error={error?.message} hint={hint}>
       <div className="relative">
-        <Input id={id} type="number" inputMode="numeric" min={0} className="pr-12 tabular" aria-invalid={!!error} {...rest} />
+        <Input ref={ref} id={id} type="number" inputMode="numeric" min={0} className="pr-12 tabular" aria-invalid={!!error} {...rest} />
         <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-muted">{suffix}</span>
       </div>
     </FormField>
   );
-}
+});
 
 export function StepSchedule({ onDone, onBack }: { onDone: () => void; onBack?: () => void }) {
   const q = useSchedulesList();

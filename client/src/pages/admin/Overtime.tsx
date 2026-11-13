@@ -62,10 +62,10 @@ export default function AdminOvertimePage() {
 
       <TableContainer>
         <FilterBar onReset={() => { setStatus('EN_ATTENTE'); setRange({ from: '', to: '' }); setDepartmentId(''); }} canReset={canReset}>
-          <Select aria-label="Statut" value={status} onValueChange={setStatus} allLabel="Tous les statuts"
+          <Select className="sm:w-56" aria-label="Statut" value={status} onValueChange={setStatus} allLabel="Tous les statuts"
             options={Object.entries(OVERTIME_STATUS).map(([value, d]) => ({ value, label: d.label }))} />
           <DateRangePicker from={range.from} to={range.to} onChange={setRange} />
-          <DepartmentSelect value={departmentId} onChange={setDepartmentId} />
+          {canReadSettings && <DepartmentSelect className="sm:w-56" value={departmentId} onChange={setDepartmentId} />}
         </FilterBar>
         <Table>
           <TableHeader>

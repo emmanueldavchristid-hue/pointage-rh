@@ -94,7 +94,7 @@ export default function AdminDashboardPage() {
         {kpis.error && !k ? (
           <Card><QueryError error={kpis.error} onRetry={kpis.refetch} compact label="Indicateurs" /></Card>
         ) : (
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-6">
             <KpiCard label="Employés actifs" value={formatNumber(k?.activeEmployees)} icon={Users} tone="neutral" loading={loading} to="/admin/employees" />
             <KpiCard label="Présents" value={formatNumber(k?.presentToday)} icon={UserCheck} tone="success" loading={loading} to={live('present')} />
             <KpiCard label="Taux de présence" value={formatPercent(k?.presenceRate)} icon={Percent} tone="brand" loading={loading}

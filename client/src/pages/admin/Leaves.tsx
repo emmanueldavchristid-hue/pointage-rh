@@ -30,7 +30,7 @@ export default function AdminLeavesPage() {
         description={isHR ? 'Avis des responsables et décision finale de la RH.' : 'Donnez votre avis sur les demandes de votre équipe ; la RH prend la décision finale.'}
       />
       <Tabs value={tab} onValueChange={setTab}>
-        <TabsList variant="underline">
+        <TabsList variant="underline" className="overflow-y-hidden">
           <TabsTrigger value="todo"><Inbox />À traiter{actionable.length > 0 && <Badge variant="warning" className="ml-0.5 px-1.5 py-0 tabular">{actionable.length}</Badge>}</TabsTrigger>
           <TabsTrigger value="all"><List />Toutes les demandes</TabsTrigger>
           <TabsTrigger value="calendar"><CalendarRange />Calendrier</TabsTrigger>
@@ -72,7 +72,7 @@ function AllLeaves({ scope, onOpen }: { scope: 'team' | 'all'; onOpen: (l: Leave
   return (
     <TableContainer>
       <FilterBar onReset={() => { setStatus(''); setRange({ from: '', to: '' }); }} canReset={canReset}>
-        <Select aria-label="Statut" value={status} onValueChange={setStatus} allLabel="Tous les statuts"
+        <Select className="sm:w-56" aria-label="Statut" value={status} onValueChange={setStatus} allLabel="Tous les statuts"
           options={Object.entries(LEAVE_STATUS).filter(([k]) => k !== 'BROUILLON').map(([value, d]) => ({ value, label: d.label }))} />
         <DateRangePicker from={range.from} to={range.to} onChange={setRange} />
       </FilterBar>

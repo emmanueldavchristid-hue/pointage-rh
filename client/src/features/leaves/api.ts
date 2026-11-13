@@ -120,5 +120,6 @@ export const LEAVE_CATEGORY: Record<string, string> = {
   CONGE: 'Congé',
   PERMISSION: 'Permission',
   MISSION: 'Mission',
+  MALADIE: 'Maladie',
   ABSENCE: 'Absence autorisée',
 };

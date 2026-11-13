@@ -24,10 +24,11 @@ const schema = z
 
 type Values = z.infer<typeof schema>;
 
-export function PasswordInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
+export const PasswordInput = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(function PasswordInput(props, ref) {
   const [show, setShow] = React.useState(false);
   return (
     <Input
+      ref={ref}
       {...props}
       type={show ? 'text' : 'password'}
       rightSlot={
@@ -43,7 +44,7 @@ export function PasswordInput(props: React.InputHTMLAttributes<HTMLInputElement>
       }
     />
   );
-}
+});
 
 function Rule({ ok, children }: { ok: boolean; children: React.ReactNode }) {
   return (

@@ -46,7 +46,7 @@ export const ADMIN_NAV: NavSection[] = [
   {
     title: 'Administration',
     items: [
-      { label: 'Paramètres', to: '/admin/settings', icon: Settings, roles: SUPER },
+      { label: 'Paramètres', to: '/admin/settings', icon: Settings, roles: ['SUPER_ADMIN', 'HR_ADMIN'] },
       { label: 'QR Codes & bornes', to: '/admin/locations', icon: QrCode, roles: SUPER },
       { label: 'Utilisateurs', to: '/admin/users', icon: UserCog, roles: SUPER },
       { label: "Journal d'audit", to: '/admin/audit', icon: FileClock, roles: SUPER },

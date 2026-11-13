@@ -78,8 +78,9 @@ export default function AdminEmployeesPage() {
           onReset={reset}
           canReset={dirty}
         >
-          <Select value={f.departmentId} onValueChange={(v) => set({ departmentId: v })} options={deptOptions} allLabel="Tous les départements" aria-label="Département" />
+          {isHR && <Select className="sm:w-[200px]" value={f.departmentId} onValueChange={(v) => set({ departmentId: v })} options={deptOptions} allLabel="Tous les départements" aria-label="Département" />}
           <Select
+            className="sm:w-[160px]"
             value={f.status}
             onValueChange={(v) => set({ status: v })}
             options={[{ value: 'ACTIVE', label: 'Actifs' }, { value: 'INACTIVE', label: 'Inactifs' }]}
@@ -140,7 +141,7 @@ export default function AdminEmployeesPage() {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="hidden font-medium tabular text-slate-700 sm:table-cell">{e.matricule}</TableCell>
+                  <TableCell className="hidden whitespace-nowrap font-medium tabular text-slate-700 sm:table-cell">{e.matricule}</TableCell>
                   <TableCell>{e.departmentName ?? <span className="text-muted">—</span>}</TableCell>
                   <TableCell className="hidden lg:table-cell">{e.positionTitle ?? <span className="text-muted">—</span>}</TableCell>
                   <TableCell><StatusBadge kind="employee" value={e.status} /></TableCell>

@@ -48,10 +48,10 @@ function DaysTab() {
           actions={isHR && <Button size="sm" leftIcon={<Plus />} onClick={() => setExcOpen(true)}>Pointage exceptionnel</Button>}
         >
           <DateRangePicker from={from} to={to} onChange={(r) => set({ from: r.from, to: r.to, date: '' })} />
-          <Select value={f.departmentId} onValueChange={(v) => set({ departmentId: v })} options={deptOptions} allLabel="Tous les départements" aria-label="Département" />
-          <Select value={f.employeeId} onValueChange={(v) => set({ employeeId: v })} options={empOptions} allLabel="Tous les employés" aria-label="Employé" />
-          <Select value={f.state} onValueChange={(v) => set({ state: v })} options={stateOptions} allLabel="Tous les états" aria-label="État" />
-          <Select value={f.dayStatus} onValueChange={(v) => set({ dayStatus: v })} options={dayStatusOptions} allLabel="Toutes les qualifications" aria-label="Qualification" />
+          <Select className="sm:w-[200px]" value={f.departmentId} onValueChange={(v) => set({ departmentId: v })} options={deptOptions} allLabel="Tous les départements" aria-label="Département" />
+          <Select className="sm:w-[200px]" value={f.employeeId} onValueChange={(v) => set({ employeeId: v })} options={empOptions} allLabel="Tous les employés" aria-label="Employé" />
+          <Select className="sm:w-[200px]" value={f.state} onValueChange={(v) => set({ state: v })} options={stateOptions} allLabel="Tous les états" aria-label="État" />
+          <Select className="sm:w-[200px]" value={f.dayStatus} onValueChange={(v) => set({ dayStatus: v })} options={dayStatusOptions} allLabel="Toutes les qualifications" aria-label="Qualification" />
           <div className="flex h-10 items-center gap-2 !min-w-0">
             <Switch id="att-corrected" checked={f.corrected === '1'} onCheckedChange={(c) => set({ corrected: c ? '1' : '' })} />
             <Label htmlFor="att-corrected" className="whitespace-nowrap">Corrigées</Label>
@@ -67,7 +67,7 @@ function DaysTab() {
                 <TableHead align="right">Arrivée</TableHead>
                 <TableHead align="right">Départ</TableHead>
                 <TableHead align="right">Retard</TableHead>
-                <TableHead align="right" className="hidden lg:table-cell">Présence</TableHead>
+                <TableHead align="right" className="hidden xl:table-cell">Présence</TableHead>
                 <TableHead align="right">Effectif</TableHead>
                 <TableHead align="right" className="hidden md:table-cell">HS pot.</TableHead>
                 {isHR && <TableHead align="right"><span className="sr-only">Actions</span></TableHead>}
@@ -101,16 +101,16 @@ function DaysTab() {
                   <TableCell align="right" className="tabular">{formatTime(a.arrivalAt)}</TableCell>
                   <TableCell align="right" className="tabular">{formatTime(a.departureAt)}</TableCell>
                   <TableCell align="right" className={`tabular ${a.lateMinutes ? 'font-medium text-warning-strong' : 'text-muted'}`}>{a.lateMinutes ? formatDuration(a.lateMinutes) : '—'}</TableCell>
-                  <TableCell align="right" className="hidden tabular lg:table-cell">{a.presenceMinutes ? formatDuration(a.presenceMinutes) : '—'}</TableCell>
+                  <TableCell align="right" className="hidden tabular xl:table-cell">{a.presenceMinutes ? formatDuration(a.presenceMinutes) : '—'}</TableCell>
                   <TableCell align="right" className="tabular">{a.workedMinutes ? formatDuration(a.workedMinutes) : '—'}</TableCell>
                   <TableCell align="right" className="hidden tabular md:table-cell">{a.overtimePotentialMinutes ? formatDuration(a.overtimePotentialMinutes) : '—'}</TableCell>
                   {isHR && (
                     <TableCell align="right">
                       <Button
-                        variant="ghost" size="sm" leftIcon={<PencilLine />}
+                        variant="ghost" size="icon-sm" aria-label={`Corriger la journée de ${a.employee.fullName}`} title="Corriger"
                         onClick={(e) => { e.stopPropagation(); set({ open: String(a.id), correct: '1' }, true); }}
                       >
-                        <span className="hidden xl:inline">Corriger</span>
+                        <PencilLine />
                       </Button>
                     </TableCell>
                   )}
@@ -152,8 +152,9 @@ function RawLogTab() {
         onReset={() => { setFrom(addDaysISO(today, -1)); setTo(today); setEmployeeId(''); setResult(''); setPage(1); }}
       >
         <DateRangePicker from={from} to={to} onChange={(r) => { setFrom(r.from); setTo(r.to); setPage(1); }} />
-        <Select value={employeeId} onValueChange={(v) => { setEmployeeId(v); setPage(1); }} options={empOptions} allLabel="Tous les employés" aria-label="Employé" />
+        <Select className="sm:w-[200px]" value={employeeId} onValueChange={(v) => { setEmployeeId(v); setPage(1); }} options={empOptions} allLabel="Tous les employés" aria-label="Employé" />
         <Select
+          className="sm:w-[200px]"
           value={result}
           onValueChange={(v) => { setResult(v); setPage(1); }}
           options={[{ value: 'ACCEPTE', label: 'Acceptés' }, { value: 'REFUSE', label: 'Refusés' }]}

@@ -14,7 +14,7 @@ function Tile({ icon: Icon, label, value, sub, tone }: { icon: LucideIcon; label
         <Icon className="h-4 w-4" aria-hidden />
       </span>
       <div className="min-w-0">
-        <p className="truncate text-xs text-muted">{label}</p>
+        <p className="text-xs leading-tight text-muted">{label}</p>
         <p className="tabular text-base font-semibold text-ink">{value}</p>
         {sub && <p className="tabular truncate text-[11px] text-muted">{sub}</p>}
       </div>
@@ -60,12 +60,12 @@ export function MonthSummary({ month }: { month: string }) {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <Tile icon={CalendarCheck} label="Jours de présence" value={d.daysPresent} tone="bg-success-soft text-success" />
+              <Tile icon={CalendarCheck} label="Jours présents" value={d.daysPresent} tone="bg-success-soft text-success" />
               <Tile icon={AlarmClock} label="Retards" value={d.lateCount} sub={d.lateMinutes > 0 ? `${formatDuration(d.lateMinutes)} au total` : undefined} tone="bg-warning-soft text-warning-strong" />
               <Tile icon={CalendarX2} label="Absences" value={d.absences} tone="bg-danger-soft text-danger" />
               <Tile icon={Plane} label="Congés pris" value={`${d.leaveDaysTaken} j`} tone="bg-brand-50 text-brand" />
-              <Tile icon={TrendingUp} label="Heures sup. potentielles" value={formatDuration(d.overtimePotential, { zero: '0 min' })} tone="bg-sky-50 text-sky-700" />
-              <Tile icon={Clock3} label="Heures sup. validées" value={formatDuration(d.overtimeValidated, { zero: '0 min' })} tone="bg-slate-100 text-slate-600" />
+              <Tile icon={TrendingUp} label="HS potentielles" value={formatDuration(d.overtimePotential, { zero: '0 min' })} tone="bg-sky-50 text-sky-700" />
+              <Tile icon={Clock3} label="HS validées" value={formatDuration(d.overtimeValidated, { zero: '0 min' })} tone="bg-slate-100 text-slate-600" />
             </div>
           </>
         ) : null}

@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger, EmptyState, FormField, Input, PageHeader, Select, Skeleton, Table, TableBody, TableCell,
   TableContainer, TableEmptyRow, TableHead, TableHeader, TableRow, TableSkeleton, Tabs, TabsContent, TabsList, TabsTrigger, Textarea,
 } from '@/components/ui';
-import { Callout, DepartmentSelect, DetailRow, EmployeePicker, ListSkeleton, LoadError, WeekdayChips } from '@/features/admin/shared';
+import { Callout, DepartmentSelect, DetailRow, EmployeePicker, ListSkeleton, LoadError } from '@/features/admin/shared';
 import {
   useAssignments, useCloseAssignment, useCreateAssignment, useCreateSchedule, useCreateScheduleVersion, useResolveSchedule,
   useSchedules, useUpdateSchedule, type Schedule, type ScheduleAssignment, type ScheduleVersion,
@@ -41,7 +41,7 @@ export default function AdminSchedulesPage() {
         actions={<Button leftIcon={<Plus />} onClick={() => setCreateOpen(true)}>Nouvel horaire</Button>}
       />
       <Tabs value={tab} onValueChange={setTab}>
-        <TabsList variant="underline">
+        <TabsList variant="underline" className="overflow-y-hidden">
           <TabsTrigger value="models"><Layers />Modèles</TabsTrigger>
           <TabsTrigger value="assignments"><Users />Affectations</TabsTrigger>
           <TabsTrigger value="resolve"><Search />Quel horaire s'applique ?</TabsTrigger>
@@ -409,8 +409,8 @@ function AssignmentsPanel({ schedules }: { schedules: Schedule[] }) {
       <TableContainer>
         <div className="flex flex-col gap-3 border-b border-slate-100 p-4 lg:flex-row lg:items-center">
           <div className="flex flex-1 flex-wrap items-center gap-2 [&>*]:min-w-[180px] [&>*]:flex-1 sm:[&>*]:flex-none">
-            <Select aria-label="Horaire" value={scheduleFilter} onValueChange={setScheduleFilter} allLabel="Tous les horaires" options={schedules.map((s) => ({ value: String(s.id), label: s.name }))} />
-            <DepartmentSelect value={departmentId} onChange={setDepartmentId} />
+            <Select className="sm:w-56" aria-label="Horaire" value={scheduleFilter} onValueChange={setScheduleFilter} allLabel="Tous les horaires" options={schedules.map((s) => ({ value: String(s.id), label: s.name }))} />
+            <DepartmentSelect className="sm:w-56" value={departmentId} onChange={setDepartmentId} />
             <label className="flex items-center gap-2 text-sm text-slate-600">
               <input type="checkbox" className="h-4 w-4 rounded border-slate-300 accent-brand" checked={showEnded} onChange={(e) => setShowEnded(e.target.checked)} />
               Afficher les affectations terminées
@@ -626,7 +626,7 @@ function ResolvePanel() {
                 <p className="mb-3 text-sm font-semibold text-ink">Version en vigueur depuis le {formatDate(q.data.version.effectiveFrom)}</p>
                 <VersionSummary v={q.data.version} />
                 <dl className="mt-3 divide-y divide-slate-100">
-                  <DetailRow label="Jours travaillés"><WeekdayChips value={q.data.version.workDays} disabled /></DetailRow>
+                  <DetailRow label="Jours travaillés"><WeekdayChipsReadonly days={q.data.version.workDays} /></DetailRow>
                   <DetailRow label="Durée théorique">{formatDuration(q.data.version.dailyMinutes)}</DetailRow>
                   <DetailRow label="Tolérance de retard">{q.data.version.lateToleranceMin} min</DetailRow>
                   <DetailRow label="Seuil heures sup.">{q.data.version.overtimeThresholdMin} min</DetailRow>

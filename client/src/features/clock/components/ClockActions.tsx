@@ -51,7 +51,9 @@ function hintFor(action: ClockAction, s: ClockStatus, allowed: boolean): string 
   switch (action) {
     case 'ARRIVEE':
       if (s.arrivalAt) return `Arrivée pointée à ${formatTime(s.arrivalAt)}`;
-      return allowed ? 'Scannez le QR Code ENTRÉE' : 'Indisponible pour le moment';
+      if (allowed) return 'Scannez le QR Code ENTRÉE';
+      if (s.dayStatus !== 'EN_COURS') return 'Journée clôturée : contactez les RH si besoin';
+      return 'Pas encore disponible (trop tôt)';
     case 'DEPART':
       if (s.departureAt) return `Départ pointé à ${formatTime(s.departureAt)}`;
       if (!s.arrivalAt) return "Pointez d'abord votre arrivée";

@@ -3,6 +3,7 @@ import { CalendarRange, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button, Card, EmptyState, Skeleton, Tooltip } from '@/components/ui';
 import { DepartmentSelect, LoadError } from '@/features/admin/shared';
 import { useHolidays } from '@/features/schedules/api';
+import { useAuth } from '@/features/auth/AuthProvider';
 import { LEAVE_STATUS, labelOf } from '@/lib/labels';
 import { addMonthsISO, currentMonthISO, formatDateShort, formatMonth, monthRange, todayISO } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -19,6 +20,7 @@ const isoWeekday = (iso: string) => ((new Date(`${iso}T12:00:00Z`).getUTCDay() +
 export function LeaveCalendar() {
   const [month, setMonth] = React.useState(currentMonthISO());
   const [departmentId, setDepartmentId] = React.useState('');
+  const isManager = useAuth().hasRole('MANAGER');
   const range = monthRange(month);
   const q = useLeaveCalendar({ ...range, departmentId: departmentId || undefined });
   const holidaysQ = useHolidays();
@@ -61,7 +63,7 @@ export function LeaveCalendar() {
           <Button variant="outline" size="icon-sm" onClick={() => setMonth((m) => addMonthsISO(m, 1))} aria-label="Mois suivant"><ChevronRight /></Button>
           {month !== currentMonthISO() && <Button variant="ghost" size="sm" onClick={() => setMonth(currentMonthISO())}>Aujourd'hui</Button>}
         </div>
-        <div className="sm:ml-auto sm:w-60"><DepartmentSelect value={departmentId} onChange={setDepartmentId} /></div>
+        {!isManager && <div className="sm:ml-auto sm:w-60"><DepartmentSelect value={departmentId} onChange={setDepartmentId} /></div>}
       </div>
 
       {q.isPending ? (
@@ -109,7 +111,7 @@ export function LeaveCalendar() {
                       const startCap = item.startDate === d;
                       const endCap = item.endDate === d;
                       return (
-                        <td key={d} className={cn('h-10 border-l border-slate-100 px-0', bg)}>
+                        <td key={d} className={cn('h-10 px-0', bg)}>
                           <Tooltip content={`${item.type} · ${formatDateShort(item.startDate)} → ${formatDateShort(item.endDate)} · ${labelOf(LEAVE_STATUS, item.status)}${hol ? ` · férié : ${hol}` : ''}`}>
                             <div
                               className={cn('mx-0 h-6', startCap && 'ml-0.5 rounded-l-md', endCap && 'mr-0.5 rounded-r-md', pending && 'opacity-60')}
