@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+*.log
+server/data/
+server/public/
+deploy/certs/*.pem
+deploy/certs/*.key
+deploy/backups/
+.DS_Store

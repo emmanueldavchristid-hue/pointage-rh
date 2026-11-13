@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-top: env(safe-area-inset-top, 0px);
+  }
+  html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
+  body {
+    @apply bg-surface text-ink font-sans antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+  *, ::before, ::after { @apply border-slate-200; }
+  :focus-visible { @apply outline-none; }
+  ::selection { @apply bg-brand-100 text-ink; }
+  input[type='date']::-webkit-calendar-picker-indicator { opacity: 0.55; cursor: pointer; }
+  input[type='search']::-webkit-search-cancel-button { display: none; }
+}
+
+@layer utilities {
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .pt-safe { padding-top: env(safe-area-inset-top, 0px); }
+  .tabular { font-variant-numeric: tabular-nums; }
+  .scrollbar-thin { scrollbar-width: thin; scrollbar-color: rgb(203 213 225) transparent; }
+}
