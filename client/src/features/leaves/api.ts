@@ -33,6 +33,7 @@ export interface LeaveRequest {
   createdAt: string;
   canManagerReview: boolean;
   canDecide: boolean;
+  awaitingManager?: boolean;
   canCancel: boolean;
 }
 

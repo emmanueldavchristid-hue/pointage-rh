@@ -94,7 +94,7 @@ function leaveDto(req: Request, r: any, today: string, hasManager: Set<number> =
     ...l, employee: { fullName: r.fullName, matricule: r.matricule, departmentName: r.departmentName },
     leaveType: { id: r.t.id, code: r.t.code, label: r.t.label, category: r.t.category, color: r.t.color, requiresJustification: r.t.requiresJustification, requiresHrValidation: r.t.requiresHrValidation },
     justification: r.j ? { id: r.j.id, fileName: r.j.fileName, status: r.j.status, hasFile: !!r.j.filePath } : null,
-    canManagerReview: l.status === 'EN_ATTENTE' && !l.managerDecision && (mgr || (isHr && !own)),
+    canManagerReview: l.status === 'EN_ATTENTE' && !l.managerDecision && !!mgr,
     canDecide: l.status === 'EN_ATTENTE' && isHr && !own && (!!l.managerDecision || !hasManager.has(l.employeeId)),
     awaitingManager: l.status === 'EN_ATTENTE' && !l.managerDecision && hasManager.has(l.employeeId),
     canCancel: (own && (l.status === 'BROUILLON' || l.status === 'EN_ATTENTE' || (l.status === 'APPROUVE' && l.startDate > today))) || (isHr && l.status !== 'ANNULE' && l.status !== 'REFUSE'),
@@ -234,7 +234,10 @@ router.post('/:id/manager-review', requireRole(...STAFF), ah(async (req, res) =>
   const u = req.user!;
   const isHr = u.role === 'HR_ADMIN' || u.role === 'SUPER_ADMIN';
   if (l.employeeId === u.employeeId) throw forbidden('Vous ne pouvez pas examiner votre propre demande.');
-  if (!isHr && !(await isManagerOf(req, l.employeeId))) throw forbidden("Cette demande ne relève pas de votre périmètre.");
+  if (!(await isManagerOf(req, l.employeeId))) {
+    // l'avis appartient au responsable ; les RH ne le remplacent que si l'employé n'a aucun responsable (ils décident alors directement)
+    throw forbidden(isHr ? "L'avis est réservé au responsable de l'employé." : 'Cette demande ne relève pas de votre périmètre.');
+  }
   if (l.status !== 'EN_ATTENTE' || l.managerDecision) throw conflict('INVALID_STATUS', 'Cette demande a déjà été examinée.');
   // Types ne nécessitant pas de validation RH : l'avis du responsable vaut décision
   const final = !t.requiresHrValidation ? (b.decision === 'FAVORABLE' ? 'APPROUVE' : 'REFUSE') : 'EN_ATTENTE';

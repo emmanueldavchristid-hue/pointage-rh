@@ -154,6 +154,11 @@ export function LeaveDetailDialog({ leave: l, onOpenChange }: { leave: LeaveRequ
                 </div>
               </div>
 
+              {l.awaitingManager && !canAct && (
+                <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                  En attente de l'avis du responsable : la décision RH sera possible après son avis.
+                </p>
+              )}
               {canAct && (
                 <div className="space-y-2 rounded-xl border border-brand-200 bg-brand-50/40 p-4">
                   <Label htmlFor="lv-comment">{l.canDecide ? 'Commentaire de la décision' : 'Commentaire de votre avis'}</Label>

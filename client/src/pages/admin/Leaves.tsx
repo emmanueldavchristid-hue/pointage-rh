@@ -139,7 +139,7 @@ function LeavesTable({
             <TableCell align="right">
               {withAction || l.canManagerReview || l.canDecide ? (
                 <Button size="sm" variant={l.canDecide || l.canManagerReview ? 'secondary' : 'ghost'} onClick={(e) => { e.stopPropagation(); onOpen(l); }}>
-                  {l.canDecide ? 'Décider' : l.canManagerReview ? 'Donner un avis' : 'Voir'}
+                  {l.canDecide ? 'Décider' : l.canManagerReview ? 'Donner un avis' : l.awaitingManager ? 'Avis du responsable attendu' : 'Voir'}
                 </Button>
               ) : <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); onOpen(l); }}>Voir</Button>}
             </TableCell>
