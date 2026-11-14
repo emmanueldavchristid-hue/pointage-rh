@@ -74,15 +74,16 @@ export function ChartCard({
 type D = DashboardCharts | undefined;
 
 export function PresenceDailyChart({ data, loading }: { data: D; loading: boolean }) {
-  const rows = data?.presenceDaily ?? [];
-  const empty = !rows.some((r) => r.present + r.late + r.absent > 0);
+  // « present » inclut déjà les retards : la barre empile « à l'heure » + « retards » + « absents » sans double compte.
+  const rows = (data?.presenceDaily ?? []).map((r) => ({ ...r, onTime: r.onTime ?? Math.max(0, r.present - r.late) }));
+  const empty = !rows.some((r) => r.present + r.absent > 0);
   return (
     <ChartCard
       title="Présences par jour"
       description="Présents à l'heure, retards et absences"
       loading={loading}
       empty={empty}
-      legend={<Legend items={[{ label: 'Présents', color: C.present }, { label: 'Retards', color: C.late }, { label: 'Absents', color: C.absent }]} />}
+      legend={<Legend items={[{ label: "À l'heure", color: C.present }, { label: 'Retards', color: C.late }, { label: 'Absents', color: C.absent }]} />}
       className="xl:col-span-2"
     >
       <BarChart data={rows} margin={{ top: 8, right: 4, left: -16, bottom: 0 }} barCategoryGap="20%">
@@ -93,13 +94,13 @@ export function PresenceDailyChart({ data, loading }: { data: D; loading: boolea
           cursor={{ fill: 'rgba(148,163,184,0.12)' }}
           content={({ active, payload, label }: TipProps) => active && payload?.length ? (
             <TooltipBox title={formatDayShort(String(label))} rows={[
-              { label: 'Présents', value: formatNumber(payload[0]?.payload.present), color: C.present },
+              { label: "Présents à l'heure", value: formatNumber(payload[0]?.payload.onTime), color: C.present },
               { label: 'Retards', value: formatNumber(payload[0]?.payload.late), color: C.late },
               { label: 'Absents', value: formatNumber(payload[0]?.payload.absent), color: C.absent },
             ]} />
           ) : null}
         />
-        <Bar dataKey="present" stackId="p" fill={C.present} stroke="#fff" strokeWidth={1} name="Présents" />
+        <Bar dataKey="onTime" stackId="p" fill={C.present} stroke="#fff" strokeWidth={1} name="Présents à l'heure" />
         <Bar dataKey="late" stackId="p" fill={C.late} stroke="#fff" strokeWidth={1} name="Retards" />
         <Bar dataKey="absent" stackId="p" fill={C.absent} stroke="#fff" strokeWidth={1} radius={[4, 4, 0, 0]} name="Absents" />
       </BarChart>
@@ -188,6 +189,6 @@ export function PresenceByDepartmentChart({ data, loading }: { data: D; loading:
 }
 
 export function OvertimeByDepartmentChart({ data, loading }: { data: D; loading: boolean }) {
-  const rows = (data?.overtimeByDepartment ?? []).map((r) => ({ name: r.department, value: r.minutes })).sort((a, b) => b.value - a.value);
-  return <HorizontalBars title="Heures sup. par département" description="Heures supplémentaires sur la période" rows={rows} loading={loading} format={(v) => formatDuration(v, { zero: '0 min' })} />;
+  const rows = (data?.overtimeByDepartment ?? []).map((r) => ({ name: r.department, value: Number(r.minutes ?? r.potentialMinutes ?? 0) })).sort((a, b) => b.value - a.value);
+  return <HorizontalBars title="Heures sup. par département" description="Heures supplémentaires constatées sur la période" rows={rows} loading={loading} format={(v) => formatDuration(v, { zero: '0 min' })} />;
 }

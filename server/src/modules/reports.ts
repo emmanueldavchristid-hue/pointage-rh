@@ -35,6 +35,7 @@ const STATUS_FR: Record<string, string> = {
 };
 const fr = (s: string | null | undefined) => (s ? STATUS_FR[s] ?? s.replace(/_/g, ' ').toLowerCase() : '');
 const h = (m: number) => fmtMinutes(m);
+const pct = (v: number) => `${v.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} %`;
 
 const Q = z.object({ from: zDate.optional(), to: zDate.optional(), date: zDate.optional(), employeeId: zId.optional(), departmentId: zId.optional(),
   status: z.string().max(100).optional(), format: z.enum(['json', 'xlsx', 'pdf', 'csv']).default('json') });
@@ -114,10 +115,10 @@ async function build(type: string, req: Request, p: Params, tz: string): Promise
           { key: 'absences', label: 'Absences', align: 'right' }, { key: 'leave', label: 'Congés/missions', align: 'right' }, { key: 'workedH', label: 'Travail effectif', align: 'right' },
           { key: 'otH', label: 'HS potentielles', align: 'right' }, { key: 'otValH', label: 'HS validées', align: 'right' }, { key: 'rateTxt', label: 'Taux présence', align: 'right' }],
           rows: [...deps.values()].map((d) => ({ ...d, lateH: h(d.lateMinutes), workedH: h(d.worked), otH: h(d.ot), otValH: h(d.otv),
-            rateTxt: d.daysPresent + d.absences ? `${Math.round((d.daysPresent / (d.daysPresent + d.absences)) * 1000) / 10} %` : '—' })) };
+            rateTxt: d.daysPresent + d.absences ? pct(Math.round((d.daysPresent / (d.daysPresent + d.absences)) * 1000) / 10) : '—' })) };
       }
       return { ...base, title: type === 'weekly' ? 'Rapport hebdomadaire des présences' : 'Rapport mensuel des présences', summary, columns: periodCols,
-        rows: agg.map((r) => ({ ...r, lateH: h(r.lateMinutes), workedH: h(r.worked), expectedH: h(r.expected), otH: h(r.otPotential), otValH: h(r.otValidated), rateTxt: r.rate != null ? `${r.rate} %` : '—' })) };
+        rows: agg.map((r) => ({ ...r, lateH: h(r.lateMinutes), workedH: h(r.worked), expectedH: h(r.expected), otH: h(r.otPotential), otValH: h(r.otValidated), rateTxt: r.rate != null ? pct(r.rate) : '—' })) };
     }
     case 'employee': {
       if (!p.employeeId) throw badRequest('EMPLOYEE_REQUIRED', 'Sélectionnez un employé.');
@@ -244,18 +245,18 @@ function toPdf(r: Report, res: Response, company: any) {
   r.summary.slice(0, 6).forEach((s, i) => {
     const bx = left + i * (bw + 8);
     doc.roundedRect(bx, y, bw, 44, 6).fillAndStroke('#F8FAFC', '#E2E8F0');
-    doc.fillColor('#64748B').font('Helvetica').fontSize(7.5).text(s.label.toUpperCase(), bx + 8, y + 8, { width: bw - 16 });
-    doc.fillColor('#111827').font('Helvetica-Bold').fontSize(12).text(String(s.value), bx + 8, y + 22, { width: bw - 16 });
+    doc.fillColor('#64748B').font('Helvetica').fontSize(6.5).text(s.label.toUpperCase(), bx + 8, y + 7, { width: bw - 16, height: 9, lineBreak: false, ellipsis: true });
+    doc.fillColor('#111827').font('Helvetica-Bold').fontSize(11).text(String(s.value), bx + 8, y + 23, { width: bw - 16, height: 14, lineBreak: false, ellipsis: true });
   });
   y += 58;
   // tableau
   const totalW = r.columns.reduce((s, c) => s + (c.width ?? 60), 0);
   const widths = r.columns.map((c) => ((c.width ?? 60) / totalW) * W);
   const drawHeader = () => {
-    doc.rect(left, y, W, 18).fill('#111827');
+    doc.rect(left, y, W, 24).fill('#111827');
     let cx = left;
-    r.columns.forEach((c, i) => { doc.fillColor('#FFFFFF').font('Helvetica-Bold').fontSize(7.5).text(c.label, cx + 4, y + 5, { width: widths[i] - 8, align: c.align ?? 'left', lineBreak: false, ellipsis: true }); cx += widths[i]; });
-    y += 18;
+    r.columns.forEach((c, i) => { doc.fillColor('#FFFFFF').font('Helvetica-Bold').fontSize(7.5).text(c.label, cx + 4, y + 4, { width: widths[i] - 8, height: 18, align: c.align ?? 'left', ellipsis: true }); cx += widths[i]; });
+    y += 24;
   };
   drawHeader();
   const bottom = doc.page.height - 50;
@@ -264,7 +265,7 @@ function toPdf(r: Report, res: Response, company: any) {
     if (y + rh > bottom) { doc.addPage(); y = 40; drawHeader(); }
     if (ri % 2 === 1) doc.rect(left, y, W, rh).fill('#F8FAFC');
     let cx = left;
-    r.columns.forEach((c, i) => { doc.fillColor('#1E293B').font('Helvetica').fontSize(7.5).text(String(row[c.key] ?? ''), cx + 4, y + 4.5, { width: widths[i] - 8, align: c.align ?? 'left', lineBreak: false, ellipsis: true }); cx += widths[i]; });
+    r.columns.forEach((c, i) => { doc.fillColor('#1E293B').font('Helvetica').fontSize(7.5).text(String(row[c.key] ?? ''), cx + 4, y + 4.5, { width: widths[i] - 8, height: 10, align: c.align ?? 'left', lineBreak: false, ellipsis: true }); cx += widths[i]; });
     y += rh;
   });
   if (!r.rows.length) doc.fillColor('#64748B').font('Helvetica-Oblique').fontSize(9).text('Aucune donnée sur la période sélectionnée.', left, y + 10);
@@ -272,6 +273,7 @@ function toPdf(r: Report, res: Response, company: any) {
   const range = doc.bufferedPageRange();
   for (let i = 0; i < range.count; i++) {
     doc.switchToPage(range.start + i);
+    doc.page.margins.bottom = 0; // le pied de page est dans la marge : sans cela PDFKit crée une page supplémentaire
     doc.fillColor('#94A3B8').font('Helvetica').fontSize(7.5)
       .text(`${company?.name ?? ''} — ${r.title} — document confidentiel (données personnelles)`, left, doc.page.height - 30, { width: W / 1.5, lineBreak: false })
       .text(`Page ${i + 1} / ${range.count}`, left, doc.page.height - 30, { width: W, align: 'right', lineBreak: false });

@@ -6,11 +6,13 @@ export interface DashboardKpis {
   incomplete: number; overtimePending: number; openAnomalies: number; notArrivedYet: number; pendingLeaves?: number;
 }
 export interface DashboardCharts {
-  presenceDaily: { date: string; present: number; absent: number; late: number }[];
+  /** present = total des présents (à l'heure + en retard) ; onTime fourni par le serveur. */
+  presenceDaily: { date: string; present: number; absent: number; late: number; onTime?: number; leave?: number }[];
   lateMonthly: { month: string; count: number; minutes: number }[];
   absenceBreakdown: { status: string; count: number }[];
   presenceByDepartment: { department: string; rate: number }[];
-  overtimeByDepartment: { department: string; minutes: number }[];
+  /** Le serveur renvoie potentialMinutes/validatedMinutes/pendingMinutes (contrat initial : minutes). */
+  overtimeByDepartment: { department: string; minutes?: number; potentialMinutes?: number; validatedMinutes?: number; pendingMinutes?: number }[];
   presenceRateTrend: { date: string; rate: number }[];
 }
 

@@ -9,7 +9,7 @@ import { computeDay, shiftBounds, isScheduledWorkDay } from './calc.js';
 import { loadScheduleResolver, toRules, type ScheduleVersion } from './schedule.js';
 import { loadHolidays, loadApprovedLeaves, leaveDayStatus } from './dayContext.js';
 import { getSettings, companyTz } from './settings.js';
-import { addDays, localDate } from '../utils/time.js';
+import { addDays, localDate, fmtDate } from '../utils/time.js';
 import { hrUserIds, notifyUsers, managerUserIdsFor, notifyEmployee } from './notify.js';
 
 type Attendance = typeof schema.attendances.$inferSelect;
@@ -163,7 +163,8 @@ export async function closeDays(opts: { daysBack?: number; now?: Date; date?: st
   let closed = 0;
   for (const date of dates) {
     for (const e of emps) {
-      if (e.hireDate && e.hireDate > date) continue;
+      // pas de journée avant l'embauche, ni (sans date d'embauche) avant la création de la fiche
+      if (e.hireDate ? e.hireDate > date : localDate(e.createdAt, tz) > date) continue;
       const r = resolve(e, date);
       const [existing] = await db.select().from(schema.attendances).where(and(eq(schema.attendances.employeeId, e.id), eq(schema.attendances.workDate, date)));
       if (existing?.isClosed) continue;
@@ -183,11 +184,11 @@ export async function closeDays(opts: { daysBack?: number; now?: Date; date?: st
         const a = res.attendance;
         if (a.arrivalAt && !a.departureAt) {
           await raiseAnomaly(tx, { employeeId: e.id, attendanceId: a.id, workDate: date, type: 'DEPART_MANQUANT', severity: 'MOYENNE', message: 'Arrivée enregistrée sans départ : oubli de pointage de sortie probable.' });
-          await notifyEmployee(e.id, { type: 'OUBLI_POINTAGE', title: 'Départ non pointé', body: `Votre départ du ${date} n'a pas été pointé. Contactez les RH pour régulariser.`, link: '/app/history' }, tx);
+          await notifyEmployee(e.id, { type: 'OUBLI_POINTAGE', title: 'Départ non pointé', body: `Votre départ du ${fmtDate(date)} n'a pas été pointé. Contactez les RH pour régulariser.`, link: '/app/history' }, tx);
         }
         if (a.dayStatus === 'ABSENCE_NON_JUSTIFIEE') {
           await raiseAnomaly(tx, { employeeId: e.id, attendanceId: a.id, workDate: date, type: 'ARRIVEE_MANQUANTE', severity: 'FAIBLE', message: "Aucun pointage sur une journée travaillée (absence non justifiée à ce stade)." });
-          await notifyEmployee(e.id, { type: 'JUSTIFICATIF_DEMANDE', title: 'Absence à justifier', body: `Aucun pointage le ${date}. Vous pouvez déposer un justificatif.`, link: '/app/requests' }, tx);
+          await notifyEmployee(e.id, { type: 'JUSTIFICATIF_DEMANDE', title: 'Absence à justifier', body: `Aucun pointage le ${fmtDate(date)}. Vous pouvez déposer un justificatif.`, link: '/app/requests' }, tx);
         }
         if (a.workedMinutes > settings.anomalies.maxWorkMinutes) {
           await raiseAnomaly(tx, { employeeId: e.id, attendanceId: a.id, workDate: date, type: 'DUREE_ANORMALE', severity: 'ELEVEE', message: `Durée de travail anormale : ${Math.round(a.workedMinutes / 6) / 10} h.` });

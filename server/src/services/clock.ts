@@ -82,6 +82,8 @@ const wrongTypeMsg = (a: Action) => a === 'ARRIVEE' || a === 'PAUSE_FIN'
   : "Ce QR Code est celui de l'ENTRÉE. Scannez le QR Code de SORTIE pour pointer votre départ.";
 
 const ACTION_LABEL: Record<Action, string> = { ARRIVEE: 'Arrivée', DEPART: 'Départ', PAUSE_DEBUT: 'Début de pause', PAUSE_FIN: 'Fin de pause' };
+/** Accord du participe : « Arrivée enregistrée », « Départ enregistré » */
+const DONE: Record<Action, string> = { ARRIVEE: 'Arrivée enregistrée', DEPART: 'Départ enregistré', PAUSE_DEBUT: 'Début de pause enregistré', PAUSE_FIN: 'Fin de pause enregistrée' };
 
 export async function performClock(input: ClockInput) {
   const { req, employeeId, action } = input;
@@ -95,7 +97,7 @@ export async function performClock(input: ClockInput) {
     const [prev] = await db.select().from(schema.attendanceEvents)
       .where(and(eq(schema.attendanceEvents.employeeId, employeeId), eq(schema.attendanceEvents.idempotencyKey, input.idempotencyKey)));
     if (prev) {
-      if (prev.result === 'ACCEPTE') return { replay: true, event: prev, message: `${ACTION_LABEL[prev.type]} déjà enregistrée à ${fmtTime(prev.serverTime, (await getCompany()).timezone)}.` };
+      if (prev.result === 'ACCEPTE') return { replay: true, event: prev, message: `${DONE[prev.type].replace('enregistr', 'déjà enregistr')} à ${fmtTime(prev.serverTime, (await getCompany()).timezone)}.` };
       throw new ClockError(409, prev.reasonCode ?? 'TRANSITION_INVALIDE', prev.reasonMessage ?? 'Pointage déjà refusé.');
     }
   }
@@ -187,12 +189,12 @@ export async function performClock(input: ClockInput) {
         }
         if (rc.attendance.earlyLeaveMinutes > 0) warnings.push(`Départ anticipé : ${rc.attendance.earlyLeaveMinutes} min avant la fin prévue.`);
       }
-      await notifyEmployee(emp.id, { type: 'POINTAGE', title: `${ACTION_LABEL[action]} enregistrée`, body: `${ACTION_LABEL[action]} à ${fmtTime(now, tz)} (${loc.label}).` }, tx);
+      await notifyEmployee(emp.id, { type: 'POINTAGE', title: DONE[action], body: `${ACTION_LABEL[action]} à ${fmtTime(now, tz)} (${loc.label}).` }, tx);
       return { event, warnings };
     });
     return {
       replay: false, event: result.event, warnings: result.warnings,
-      message: `${ACTION_LABEL[action]} enregistrée à ${fmtTime(result.event.serverTime, (await getCompany()).timezone)}.`,
+      message: `${DONE[action]} à ${fmtTime(result.event.serverTime, (await getCompany()).timezone)}.`,
     };
   } catch (e: any) {
     // Course entre deux requêtes portant la même clé d'idempotence ou contrainte d'unicité : aucune donnée en double

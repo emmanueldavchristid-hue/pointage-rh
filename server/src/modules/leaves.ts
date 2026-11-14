@@ -63,6 +63,13 @@ async function reapplyDays(tx: Tx, employeeId: number, from: string, to: string)
     .where(and(eq(schema.anomalies.employeeId, employeeId), eq(schema.anomalies.type, 'ARRIVEE_MANQUANTE'), gte(schema.anomalies.workDate, from), lte(schema.anomalies.workDate, to), inArray(schema.anomalies.status, ['OUVERTE', 'EN_COURS'])));
 }
 
+/** Employés ayant un responsable (hiérarchique ou de département) habilité à donner son avis */
+async function employeesWithManager(employeeIds: number[]) {
+  const out = new Set<number>();
+  for (const id of [...new Set(employeeIds)]) if ((await managerUserIdsFor(id)).length) out.add(id);
+  return out;
+}
+
 async function isManagerOf(req: Request, employeeId: number) {
   const u = req.user!;
   if (u.role !== 'MANAGER' || !u.employeeId || u.employeeId === employeeId) return false;
@@ -78,7 +85,7 @@ function leaveQuery() {
     .leftJoin(schema.departments, eq(schema.departments.id, schema.employees.departmentId))
     .leftJoin(schema.justifications, eq(schema.justifications.id, schema.leaveRequests.justificationId));
 }
-function leaveDto(req: Request, r: any, today: string) {
+function leaveDto(req: Request, r: any, today: string, hasManager: Set<number> = new Set()) {
   const u = req.user!; const l = r.l;
   const isHr = u.role === 'HR_ADMIN' || u.role === 'SUPER_ADMIN';
   const own = u.employeeId === l.employeeId;
@@ -88,7 +95,8 @@ function leaveDto(req: Request, r: any, today: string) {
     leaveType: { id: r.t.id, code: r.t.code, label: r.t.label, category: r.t.category, color: r.t.color, requiresJustification: r.t.requiresJustification, requiresHrValidation: r.t.requiresHrValidation },
     justification: r.j ? { id: r.j.id, fileName: r.j.fileName, status: r.j.status, hasFile: !!r.j.filePath } : null,
     canManagerReview: l.status === 'EN_ATTENTE' && !l.managerDecision && (mgr || (isHr && !own)),
-    canDecide: l.status === 'EN_ATTENTE' && isHr && !own,
+    canDecide: l.status === 'EN_ATTENTE' && isHr && !own && (!!l.managerDecision || !hasManager.has(l.employeeId)),
+    awaitingManager: l.status === 'EN_ATTENTE' && !l.managerDecision && hasManager.has(l.employeeId),
     canCancel: (own && (l.status === 'BROUILLON' || l.status === 'EN_ATTENTE' || (l.status === 'APPROUVE' && l.startDate > today))) || (isHr && l.status !== 'ANNULE' && l.status !== 'REFUSE'),
     canSubmit: own && l.status === 'BROUILLON',
   };
@@ -119,7 +127,8 @@ router.get('/', ah(async (req, res) => {
   const [{ total }] = await db.select({ total: sql<number>`count(*)::int` }).from(schema.leaveRequests).innerJoin(schema.employees, eq(schema.employees.id, schema.leaveRequests.employeeId)).where(where);
   const rows = await leaveQuery().where(where).orderBy(desc(schema.leaveRequests.createdAt)).limit(pageSize).offset(offset);
   const today = localDate(new Date(), await companyTz());
-  res.json({ items: rows.map((r) => leaveDto(req, r, today)), total, page, pageSize });
+  const hasManager = await employeesWithManager(rows.map((r) => r.l.employeeId));
+  res.json({ items: rows.map((r) => leaveDto(req, r, today, hasManager)), total, page, pageSize });
 }));
 
 router.get('/calendar', requireRole(...STAFF), ah(async (req, res) => {
@@ -141,7 +150,7 @@ router.get('/:id', ah(async (req, res) => {
   const [r] = await leaveQuery().where(eq(schema.leaveRequests.id, id));
   if (!r) throw notFound();
   await assertCanAccessEmployee(req, r.l.employeeId);
-  res.json(leaveDto(req, r, localDate(new Date(), await companyTz())));
+  res.json(leaveDto(req, r, localDate(new Date(), await companyTz()), await employeesWithManager([r.l.employeeId])));
 }));
 
 const createInput = z.object({ leaveTypeId: zId, startDate: zDate, endDate: zDate, comment: z.string().max(1000).optional().nullable(),
@@ -251,6 +260,10 @@ router.post('/:id/decide', requireRole(...ADMINS), ah(async (req, res) => {
   if (l.employeeId === req.user!.employeeId) throw forbidden('Vous ne pouvez pas valider votre propre demande.');
   if (l.status !== 'EN_ATTENTE') throw conflict('INVALID_STATUS', 'Cette demande n\'est plus en attente.');
   if (b.decision === 'REFUSE' && !b.comment?.trim()) throw badRequest('COMMENT_REQUIRED', 'Un commentaire est obligatoire pour un refus.');
+  // Workflow : avis du responsable d'abord (s'il en existe un), puis décision RH
+  if (!l.managerDecision && (await managerUserIdsFor(l.employeeId)).length) {
+    throw conflict('MANAGER_REVIEW_PENDING', "L'avis du responsable est attendu avant la décision RH.");
+  }
   await db.transaction(async (tx) => {
     await tx.update(schema.leaveRequests).set({ status: b.decision, hrDecidedBy: req.user!.id, hrDecidedAt: new Date(), hrComment: b.comment ?? null, updatedAt: new Date() })
       .where(eq(schema.leaveRequests.id, l.id));

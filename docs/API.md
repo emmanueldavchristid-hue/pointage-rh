@@ -152,7 +152,7 @@ Pointage pendant un jour non travaillé / férié / congé : accepté mais gén�
 ## Dashboard
 | GET | `/dashboard/kpis?date=` | → `{activeEmployees, presentToday, absentToday, lateToday, onLeave, presenceRate, incomplete, overtimePending, openAnomalies, notArrivedYet, pendingLeaves}` |
 |---|---|---|
-| GET | `/dashboard/charts?from=&to=&departmentId=` | → `{presenceDaily: [{date, present, absent, late}], lateMonthly: [{month, count, minutes}], absenceBreakdown: [{status, count}], presenceByDepartment: [{department, rate}], overtimeByDepartment: [{department, minutes}], presenceRateTrend: [{date, rate}]}` |
+| GET | `/dashboard/charts?from=&to=&departmentId=` | → `{presenceDaily: [{date, present, absent, late}], lateMonthly: [{month, count, minutes}], absenceBreakdown: [{status, count}], presenceByDepartment: [{department, rate}], overtimeByDepartment: [{department, potentialMinutes, validatedMinutes, pendingMinutes}], presenceRateTrend: [{date, rate}]}` |
 
 ## Rapports
 | GET | `/reports/:type` | type ∈ `daily, weekly, monthly, employee, late, absences, leaves, overtime, department, anomalies` ; `?from=&to=&employeeId=&departmentId=&status=&format=json|xlsx|pdf|csv` |
@@ -183,7 +183,7 @@ JSON → `{title, period: {from, to}, generatedAt, summary: [{label, value}], co
 
 ## Formats complémentaires
 - `Anomaly` = `{id, employeeId, employee: {fullName, matricule, departmentName}, attendanceId, workDate, type, severity, status, message, details, detectedAt, resolvedAt, resolutionNote}` ; types : `ARRIVEE_MANQUANTE, DEPART_MANQUANT, DOUBLE_ARRIVEE, DOUBLE_DEPART, DEPART_SANS_ARRIVEE, HORS_HORAIRE, JOUR_NON_TRAVAILLE, PAUSE_NON_TERMINEE, DUREE_ANORMALE, DEPASSEMENT_HORAIRE, CORRECTION_MANUELLE, TENTATIVES_REPETEES, HORS_RESEAU, QR_INVALIDE`
-- `LeaveRequest` = `{id, employeeId, employee: {fullName, matricule, departmentName}, leaveType: {id, code, label, category, color, requiresJustification}, startDate, endDate, workingDays, comment, status, managerDecision, managerComment, managerReviewedAt, hrComment, hrDecidedAt, justification: {id, fileName, status}|null, createdAt, canManagerReview: boolean, canDecide: boolean, canCancel: boolean}`
+- `LeaveRequest` = `{id, employeeId, employee: {fullName, matricule, departmentName}, leaveType: {id, code, label, category, color, requiresJustification}, startDate, endDate, workingDays, comment, status, managerDecision, managerComment, managerReviewedAt, hrComment, hrDecidedAt, justification: {id, fileName, status}|null, createdAt, canManagerReview: boolean, canDecide: boolean, awaitingManager: boolean, canCancel: boolean, canSubmit: boolean}` — `POST /leaves/:id/decide` répond 409 `MANAGER_REVIEW_PENDING` tant que le responsable (s'il existe) n'a pas donné son avis
 - `Justification` = `{id, employeeId, employee: {...}, workDate, attendanceId, leaveRequestId, reason, fileName, mimeType, hasFile, status, reviewComment, reviewedAt, createdAt}`
 - `OvertimeRecord` = `{id, attendanceId, employeeId, employee: {...}, workDate, potentialMinutes, validatedMinutes, status, rateCode, comment, decidedAt, arrivalAt, departureAt, workedMinutes, expectedMinutes}`
 - `AuditLog` = `{id, at, userId, userLogin, action, entity, entityId, before, after, reason, ip}`

@@ -90,7 +90,7 @@ export async function liveBoard(req: Request, date: string, departmentId?: numbe
   const out = { date, holiday, present: [] as any[], notArrived: [] as any[], late: [] as any[], earlyLeave: [] as any[], incomplete: [] as any[], onBreak: [] as any[],
     onLeave: [] as any[], absent: [] as any[], departed: [] as any[], notScheduled: [] as any[] };
   for (const { e, dep } of emps) {
-    if (e.hireDate && e.hireDate > date) continue;
+    if (e.hireDate ? e.hireDate > date : localDate(e.createdAt, tz) > date) continue;
     const brief = { employeeId: e.id, fullName: `${e.firstNames} ${e.lastName}`, matricule: e.matricule, departmentName: dep, photoUrl: fileUrl(e.photoPath) };
     const r = byEmp.get(e.id);
     const leave = leaves.get(e.id, date);

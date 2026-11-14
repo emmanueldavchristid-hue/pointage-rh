@@ -359,6 +359,13 @@ describe('Oubli de pointage, anomalies et régularisation', () => {
     const [abs] = await db.select().from(schema.attendances).where(and(eq(schema.attendances.employeeId, ids.E3), eq(schema.attendances.workDate, WED)));
     expect(abs.dayStatus).toBe('ABSENCE_NON_JUSTIFIEE');
   });
+  it('aucune absence avant la création de la fiche (employé sans date d\'embauche)', async () => {
+    const [n] = await db.insert(schema.employees).values({ matricule: 'NEW1', lastName: 'Nouveau', firstNames: 'Test', departmentId: ids.dep1, createdAt: at(THU, '10:00') }).returning();
+    await closeDays({ daysBack: 6 });
+    const rows = await db.select().from(schema.attendances).where(eq(schema.attendances.employeeId, n.id));
+    expect(rows.every((r) => r.workDate >= THU)).toBe(true);
+    expect(rows.some((r) => r.workDate === MON)).toBe(false);
+  });
   it('une absence n\'est pas déclarée injustifiée avant la fin de journée', async () => {
     setNow(at('2026-11-23', '10:00')); // lundi matin
     await closeDays({ daysBack: 0 });
@@ -420,6 +427,9 @@ describe('Congés (workflow complet)', () => {
     expect(overlap.body.error.code).toBe('OVERLAP');
   });
   it('§15.14 le responsable examine ; un responsable d\'un autre département ne peut pas', async () => {
+    const rhEarly = await login('rh@t.ci');
+    const early = await rhEarly.post(`/api/leaves/${leaveId}/decide`).send({ decision: 'APPROUVE' });
+    expect(early.status).toBe(409); expect(early.body.error.code).toBe('MANAGER_REVIEW_PENDING');
     const m = await login('mgr@t.ci');
     const list = await m.get('/api/leaves?scope=team');
     expect(list.body.items.find((l: any) => l.id === leaveId).canManagerReview).toBe(true);

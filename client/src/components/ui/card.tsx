@@ -15,8 +15,8 @@ export interface CardHeaderProps extends Omit<React.HTMLAttributes<HTMLDivElemen
 
 export function CardHeader({ className, title, description, actions, children, ...props }: CardHeaderProps) {
   return (
-    <div className={cn('flex items-start justify-between gap-4 px-5 pt-5', className)} {...props}>
-      <div className="min-w-0 space-y-1">
+    <div className={cn('flex flex-wrap items-start justify-between gap-x-4 gap-y-2 px-5 pt-5', className)} {...props}>
+      <div className="min-w-0 flex-1 basis-48 space-y-1">
         {title && <CardTitle>{title}</CardTitle>}
         {description && <CardDescription>{description}</CardDescription>}
         {children}
