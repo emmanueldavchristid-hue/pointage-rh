@@ -61,6 +61,8 @@ export function ScanSuccess({ action, result, onHome }: { action: ClockAction; r
 
 export function ScanError({ error, onRetry, onHome }: { error: ApiError; onRetry: () => void; onHome: () => void }) {
   const existing = existingTimeOf(error.details);
+  // Le serveur ajoute déjà « (enregistré à HH:MM) » au message : on l'enlève quand l'encadré dédié l'affiche.
+  const message = existing ? error.message.replace(/\s*\(enregistrée? à \d{1,2}[:h]\d{2}\)\s*/i, ' ').trim() : error.message;
   return (
     <Shell tone="danger">
       <div className="flex flex-1 flex-col items-center justify-center text-center" role="alert" aria-live="assertive">
@@ -68,7 +70,7 @@ export function ScanError({ error, onRetry, onHome }: { error: ApiError; onRetry
           <CircleX className="h-20 w-20" strokeWidth={1.75} aria-hidden />
         </span>
         <h1 className="mt-6 text-2xl font-semibold tracking-tight">Pointage refusé</h1>
-        <p className="mt-4 max-w-sm text-[17px] font-medium leading-relaxed">{error.message}</p>
+        <p className="mt-4 max-w-sm text-[17px] font-medium leading-relaxed">{message}</p>
         {existing && (
           <p className="mt-4 rounded-xl bg-white/15 px-4 py-2.5 text-[15px]">
             Pointage déjà enregistré à <span className="tabular font-semibold">{existing}</span>
