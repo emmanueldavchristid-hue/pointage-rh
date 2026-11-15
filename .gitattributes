@@ -1,0 +1,5 @@
+# Fins de ligne Unix obligatoires pour les fichiers exécutés dans les conteneurs Linux (clones Windows compris)
+*.sh   text eol=lf
+*.conf text eol=lf
+*.sql  text eol=lf
+Dockerfile text eol=lf

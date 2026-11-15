@@ -65,7 +65,8 @@ services:
     volumes:
       - ./deploy/certs:/certs
       - ./deploy/scripts:/scripts:ro
-    entrypoint: ["sh", "-c", "apk add --no-cache openssl >/dev/null && sh /scripts/generate-certs.sh"]
+    # tr -d '\r' : tolère un script récupéré avec des fins de ligne Windows
+    entrypoint: ["sh", "-c", "apk add --no-cache openssl >/dev/null && tr -d '\\r' < /scripts/generate-certs.sh | sh"]
 
 volumes:
   pgdata:

@@ -29,6 +29,8 @@ cp .env.example .env
 ```
 Éditer `.env` : générer trois secrets longs (`openssl rand -base64 48` ou un gestionnaire de mots de passe) pour `DB_PASSWORD`, `JWT_SECRET`, `QR_SECRET` ; renseigner `SERVER_IP`, `SERVER_NAME`, `PUBLIC_URL`, `ADMIN_INITIAL_PASSWORD`, et `BACKUP_HOST_DIR` (idéalement un second disque, ex. `D:/sauvegardes-pointage`). **Conserver une copie de `.env` en lieu sûr** (sans elle, les QR et sessions sont invalidés et la base est inaccessible).
 
+> **Windows** : l'adresse à utiliser est celle de la carte **Wi-Fi** ou **Ethernet** dans `ipconfig` (en général `192.168.x.x`), et non celles des cartes virtuelles « vEthernet (WSL) » ou Docker (`172.x.x.x`).
+
 ## 5. Certificat HTTPS (indispensable pour la caméra sur téléphone)
 
 ```bash
